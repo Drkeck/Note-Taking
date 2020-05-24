@@ -22,15 +22,25 @@ function createNote (body)  {
         path.join(__dirname, "./db/db.json"),
         JSON.stringify({ notes }, null, 2)
     )
+    return "added note."
 }
 
 function deleteNote (rId) {
-    for (let i = 0; i < notes.length; i++) {
-            let currentNote = notes[i]
-        if (rId === currentNote.id) {
-            
-        }
-    }
+  const newDb = notes.filter(note => note.id != rId);
+  notes.splice(rId, 1);
+
+  for (let i = 0; i < newDb.length; i++) {
+      newDb[i].id = `${i}`
+  }
+  
+  fs.writeFileSync(
+      path.join(__dirname, "./db/db.json"),
+      JSON.stringify({
+          notes: newDb
+        }, null, 2)
+    )
+
+    return notes
 }
 
 // Api Routes
@@ -41,21 +51,26 @@ app.get('/notes', (req, res) => {
 app.get("/api/notes", (req, res) => {
 
     return res.json(notes);
+
     
 });
 
 // post new notes.
 app.post("/api/notes", (req, res) => {
-    req.body.id = notes.length.toString();
+    if (notes.length === undefined){
+        req.body.id = 0
+    } else {
+        req.body.id = notes.length.toString();
+    }
     const newNote = createNote(req.body);
+    return res.json(notes)
 });
 
 // delete notes.
 app.delete("/api/notes/:id", (req, res) => {
-    console.log("delete note id: " + req.params.id);
-    console.log(req.params);
-    //const removeID = deleteNote(req.params.id)
-
+    deleteNote(req.params.id)
+    
+    return res.json(notes);
 })
 
 
